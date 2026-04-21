@@ -1,0 +1,69 @@
+import boto3
+import csv
+import io
+from datetime import datetime
+import pymysql
+
+s3 = boto3.client('s3')
+sns = boto3.client('sns')
+
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:471112759547:etl-notification-topic'
+
+# Use environment variables
+import os
+RDS_HOST = os.environ['RDS_HOST']
+USER = os.environ['USER']
+PASSWORD = os.environ['PASSWORD']
+DB = os.environ['DB']
+
+def lambda_handler(event, context):
+
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = event['Records'][0]['s3']['object']['key']
+
+    # Read file
+    response = s3.get_object(Bucket=bucket, Key=key)
+    content = response['Body'].read().decode('utf-8')
+
+    csv_reader = csv.DictReader(io.StringIO(content))
+
+    processed_data = []
+
+    for row in csv_reader:
+        row['processed_timestamp'] = str(datetime.now())
+        processed_data.append(row)
+
+    # Save processed file
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=processed_data[0].keys())
+    writer.writeheader()
+    writer.writerows(processed_data)
+
+    output_key = "processed/processed_" + key
+    s3.put_object(Bucket=bucket, Key=output_key, Body=output.getvalue())
+
+    #  Insert into RDS
+    connection = pymysql.connect(
+        host=RDS_HOST,
+        user=USER,
+        password=PASSWORD,
+        database=DB
+    )
+
+    with connection.cursor() as cursor:
+        for row in processed_data:
+            cursor.execute(
+                "INSERT INTO sales (amount, processed_timestamp) VALUES (%s, %s)",
+                (row['amount'], row['processed_timestamp'])
+            )
+
+    connection.commit()
+
+    # SNS notification
+    sns.publish(
+        TopicArn=SNS_TOPIC_ARN,
+        Message="File processed and stored in RDS",
+        Subject="ETL Pipeline"
+    )
+
+    return "Done"
