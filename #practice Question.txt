@@ -1,0 +1,263 @@
+#practice Question :
+
+
+# Plot Questions
+
+# 1. create a scatter plot between wt & mpg in inbuilt dataset mtcars
+# 
+# add title & labels
+# use blue color
+
+# Scatter plot between wt (weight) and mpg (mileage)
+      
+plot(mtcars$wt, mtcars$mpg,
+     main = "Scatter Plot of Weight vs Mileage",   # Title
+     xlab = "Weight (wt)",                         # X-axis label
+     ylab = "Mileage (mpg)",                       # Y-axis label
+     col = "blue",                                 # Color
+     pch = 19)                                     # Solid circle points
+
+
+# 2. create a bar plot of number of cars by cylinders of mtcats data
+#     add colors
+#     add title
+ 
+# Count number of cars for each cylinder type
+cyl_count <- table(mtcars$cyl)
+
+# Bar plot
+barplot(cyl_count,
+        col = c("red", "green", "blue"),           # Colors
+        main = "Number of Cars by Cylinders",      # Title
+        xlab = "Cylinders",
+        ylab = "Count")
+    
+# 3. create pic chart for gear distribution
+#    use different colors
+#    add labels
+
+# Count gear distribution
+gear_count <- table(mtcars$gear)
+
+# Pie chart
+pie(gear_count,
+    col = c("orange", "purple", "cyan"),           # Colors
+    main = "Gear Distribution",
+    labels = paste(names(gear_count), "=", gear_count))
+  
+# 4. create bar plot of species count of inbuilt iris datasets   
+
+# Count species
+species_count <- table(iris$Species)
+
+# Bar plot
+barplot(species_count,
+        col = c("pink", "lightblue", "lightgreen"),
+        main = "Species Count in Iris Dataset",
+        xlab = "Species",
+        ylab = "Count")
+
+# 5. draw scatter plot of wt vs mpg of built dataset mtcars
+#    draw histogram of mgp column
+#    display both the plot in one window
+
+
+par(mfrow = c(1, 2))  # divide screen into 1 row and 2 plots
+
+plot(mtcars$wt, mtcars$mpg,  # scatter plot: wt vs mpg
+     main = "wt vs mpg",     # title
+     xlab = "Weight",        # x-axis label
+     ylab = "Mileage",       # y-axis label
+     col = "blue",           # point color
+     pch = 19)               # solid dots
+
+hist(mtcars$mpg,             # histogram of mpg
+     main = "Histogram of mpg",  # title
+     xlab = "mpg",               # x-axis label
+     col = "green",              # bar color
+     border = "black")           # border color
+
+
+par(mfrow = c(1, 1))  # reset layout to default
+
+
+# Tidyverse Question
+
+#6 for diamonds dataset
+# a) create price per carat column 
+# b) filter diamonds with carat >1 and find average price 
+# c) identify top 5 diamonds with highest price 
+# d) find mumber of diamonds in each cut
+
+library(dplyr)
+
+diamonds %>%
+  mutate(price_per_carat = price / carat)   # a) create price per carat column
+
+diamonds %>%
+  filter(carat > 1) %>%                     # b) filter diamonds with carat > 1
+  summarize(avg_price = mean(price))        # find average price
+
+diamonds %>%
+  arrange(desc(price)) %>%                  # c) sort by highest price
+  slice_head(n = 5)                         # get top 5 diamonds
+
+diamonds %>%
+  count(cut)                               # d) number of diamonds in each cut
+
+
+#7 for diamonds dataset 
+# a) Count diamonds for each colour
+# b) find average price by calarity
+# c) Create price category : <200 --- low, 2000 - 5000 --- Medium, >5000 ---high 
+# d) Select only price and carat and new column price category
+
+
+
+diamonds %>%
+  count(color)                             # a) count diamonds for each color
+
+diamonds %>%
+  group_by(clarity) %>%                    # b) group by clarity
+  summarize(avg_price = mean(price))       # average price
+
+diamonds %>%
+  mutate(price_category = case_when(       # c) create price category
+    price < 2000 ~ "Low",
+    price >= 2000 & price <= 5000 ~ "Medium",
+    price > 5000 ~ "High"
+  ))
+
+diamonds %>%
+  mutate(price_category = case_when( # d) create category
+    price < 2000 ~ "Low",
+    price >= 2000 & price <= 5000 ~ "Medium",
+    price > 5000 ~ "High"
+  )) %>%
+  select(price, carat, price_category) # select only required columns
+
+
+
+#8 write a function that Takes a number from the user Return 
+# "Pass" if >=46 Return fail otherwise
+
+check_result <- function() {   # function without argument
+  
+  x <- as.numeric(readline("Enter marks: "))# take input from user
+  
+  if (x >= 46) {                 # check condition
+    return("Pass")
+  } else {
+    return("Fail")
+  }
+}
+
+check_result()           # call function
+
+
+#9 Create a function which will take numeric vector as an input and 
+# then return sum of all even numbers and sum Of all odd numbers 
+# separately test for this vector c(11,13,12,15,16,18, 20)
+
+
+sum_even_odd <- function(vec) {       # function takes numeric vector
+  
+  even_sum <- sum(vec[vec %% 2 == 0]) # sum of even numbers
+  odd_sum  <- sum(vec[vec %% 2 != 0]) # sum of odd numbers
+  
+  return(list(even_sum = even_sum,    # return both values
+              odd_sum = odd_sum))
+}
+
+sum_even_odd(c(11,13,12,15,16,18,20)) # test vector
+
+
+#10 For numbers 1 to 15
+# a) print div3 if numbers is divisible by 3
+# b) print div5 if numbers if divisible by 5
+# c) print div35 if number iS divisible by both 
+# d) print number otherwise 
+
+
+for (i in 1:15) {                    # loop from 1 to 15
+  
+  if (i %% 3 == 0 & i %% 5 == 0) {
+    print("div35")                  # divisible by both 3 and 5
+    
+  } else if (i %% 3 == 0) {
+    print("div3")                   # divisible by 3
+    
+  } else if (i %% 5 == 0) {
+    print("div5")                   # divisible by 5
+    
+  } else {
+    print(i)                        # otherwise print number
+  }
+}
+
+
+#11 Consider the following vector and matrix
+# v = c(2,4,6,8,10 n = matrix(1:9, arow = 3, byrow = T 
+# a) multiply each element of v by 2 
+# b) find sum of all the elements of resulting vector 
+# c) replace the diagonal elements of matrix m with 0 and print the final matrix
+``
+v <- c(2,4,6,8,10)                     # create vector
+m <- matrix(1:9, nrow = 3, byrow = TRUE)  # create 3x3 matrix
+m
+v2 <- v * 2                            # a) multiply each element by 2
+sum(v2)                                # b) sum of resulting vector
+
+diag(m) <- 0                           # c) replace diagonal elements with 0
+print(m)                               # print updated matrix
+
+
+
+
+
+#12 Create a list with vector c(1,2,3), matrix 1 to 4 and number 10 
+# a) Accesss matrix 
+# b) fund sum of matrix 
+# c) add new element "R Programming" at the end
+
+my_list <- list(
+  vec = c(1,2,3),
+  mat = matrix(1:4,nrow=2),
+  num = 10
+)
+my_list
+
+my_list$mat
+sum(my_list$mat) 
+
+my_list$new <- "R Programming"
+print(my_list)
+
+
+#13 Load inbuilt iris dataset
+# a) Display rows where Sepal.Length > 6
+# b) Find Average Sepal.Length
+# c) Display only Sepal.Length & Species
+
+data(iris)
+iris[iris$Sepal.Length > 6,]
+mean(iris$Sepal.Length)
+iris[, c("Sepal.Length","Species")]
+
+
+
+# 14 For vector c(3,6,9,12,15)
+# a) Print elements > 8
+# b) Replace values > 10 with 0
+# c) Access element which is at 4th position
+# d) Remove 3rd element
+
+v <- c(3,6,9,12,15)
+v[ v > 8]
+
+v[v > 10] <- 0
+v
+
+v[4]
+v <- v[-3]
+v
